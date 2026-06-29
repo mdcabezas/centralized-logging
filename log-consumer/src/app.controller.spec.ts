@@ -1,9 +1,14 @@
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { Database } from './database/database';
 import { KafkaContext } from '@nestjs/microservices';
 
 describe('AppController', () => {
+  beforeAll(() => {
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+  });
   let controller: AppController;
   let database: { insertLog: jest.Mock; onModuleDestroy: jest.Mock };
 
