@@ -31,14 +31,23 @@ centralized-logging/
 │   │   ├── main.ts
 │   │   ├── app.module.ts
 │   │   ├── app.controller.ts
+│   │   ├── app.controller.spec.ts
 │   │   └── dto/
+│   │       ├── create-log.dto.ts
+│   │       └── create-log.dto.spec.ts
+│   ├── test/
+│   │   ├── app.e2e-spec.ts
+│   │   └── jest-e2e.json
+│   ├── jest.config.ts
 │   └── Dockerfile
 ├── log-consumer/         # Kafka consumer + PostgreSQL
 │   ├── src/
 │   │   ├── main.ts
 │   │   ├── app.module.ts
 │   │   ├── app.controller.ts
+│   │   ├── app.controller.spec.ts
 │   │   └── database/
+│   ├── jest.config.ts
 │   └── Dockerfile
 ├── .env.example
 ├── docker-compose.yml
@@ -99,6 +108,25 @@ cd log-consumer && npm run start:dev
 ```
 
 Las variables de entorno tienen defaults para localhost, no hace falta configurarlas.
+
+## Testing
+
+Cada microservicio tiene tests unitarios y el api-gateway tiene tests e2e. Los servicios externos (Kafka, PostgreSQL) son mockeados — no requieren Docker para correr los tests.
+
+```bash
+# Unit tests
+cd api-gateway && npm test
+cd log-consumer && npm test
+
+# Watch mode
+npm run test:watch
+
+# Coverage
+npm run test:cov
+
+# E2E (api-gateway)
+cd api-gateway && npm run test:e2e
+```
 
 ## Configuración
 
