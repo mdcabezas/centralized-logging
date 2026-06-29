@@ -21,6 +21,7 @@ graph LR
 | Mensajería | Apache Kafka 4.3.0 (KRaft, sin Zookeeper) |
 | Persistencia | PostgreSQL 17 (sin ORM, pg directo) |
 | Contenedores | Docker Compose |
+| Testing | Jest (unit + e2e) |
 
 ## Estructura
 
@@ -118,11 +119,13 @@ Cada microservicio tiene tests unitarios y el api-gateway tiene tests e2e. Los s
 cd api-gateway && npm test
 cd log-consumer && npm test
 
-# Watch mode
-npm run test:watch
+# Watch mode (en cada proyecto)
+cd api-gateway && npm run test:watch
+cd log-consumer && npm run test:watch
 
 # Coverage
-npm run test:cov
+cd api-gateway && npm run test:cov
+cd log-consumer && npm run test:cov
 
 # E2E (api-gateway)
 cd api-gateway && npm run test:e2e
