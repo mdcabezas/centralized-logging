@@ -10,6 +10,7 @@ import { AppController } from './app.controller';
         transport: Transport.KAFKA,
         options: {
           client: {
+            clientId: 'api-gateway',
             brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
           },
           producerOnlyMode: true,
