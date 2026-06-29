@@ -4,14 +4,51 @@ Microservicios con NestJS, Kafka y PostgreSQL para logging centralizado.
 
 ## Arquitectura
 
+### 1. Lógica de negocio
+
 ```mermaid
-graph LR
-  C[Client] -->|POST /log| G[api-gateway<br/>:3000]
-  G -->|emit app-logs| K[Kafka KRaft<br/>:9092]
-  K -->|consume| L[log-consumer]
-  L -->|INSERT| P[(PostgreSQL)]
-  G -.->|OTLP| J[Jaeger<br/>:16686]
-  L -.->|OTLP| J
+sequenceDiagram
+    participant Cliente
+    participant API Gateway
+    participant Kafka
+    participant Log Consumer
+    participant PostgreSQL
+
+    Cliente->>API Gateway: POST /log
+    activate API Gateway
+    API Gateway->>Kafka: emit app-logs
+    API Gateway-->>Cliente: 201 { status, sent }
+    deactivate API Gateway
+    Kafka-->>Log Consumer: consume app-logs
+    activate Log Consumer
+    Log Consumer->>PostgreSQL: INSERT log
+    deactivate Log Consumer
+```
+
+### 2. Trazas distribuidas (OpenTelemetry + Jaeger)
+
+```mermaid
+sequenceDiagram
+    participant Cliente
+    participant API Gateway
+    participant Jaeger
+    participant Kafka
+    participant Log Consumer
+    participant PostgreSQL
+
+    Cliente->>API Gateway: POST /log
+    activate API Gateway
+    API Gateway-->>Jaeger: span POST /log
+    API Gateway->>Kafka: emit app-logs (traceparent)
+    API Gateway-->>Jaeger: span kafka.produce
+    API Gateway-->>Cliente: 201 { status, sent }
+    deactivate API Gateway
+    Kafka-->>Log Consumer: consume app-logs
+    activate Log Consumer
+    Log Consumer-->>Jaeger: span kafka.consume
+    Log Consumer->>PostgreSQL: INSERT log
+    Log Consumer-->>Jaeger: span pg.query
+    deactivate Log Consumer
 ```
 
 ## Stack
