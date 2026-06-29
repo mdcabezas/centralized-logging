@@ -40,13 +40,19 @@ centralized-logging/
 │   │   ├── app.controller.ts
 │   │   └── database/
 │   └── Dockerfile
+├── .env.example
 ├── docker-compose.yml
 └── README.md
 ```
 
+## Requisitos
+
+- Docker y Docker Compose
+
 ## Cómo levantar
 
 ```bash
+cp .env.example .env
 docker compose up -d --build
 ```
 
@@ -93,3 +99,14 @@ cd log-consumer && npm run start:dev
 ```
 
 Las variables de entorno tienen defaults para localhost, no hace falta configurarlas.
+
+## Configuración
+
+Copiar `.env.example` a `.env` y ajustar según sea necesario:
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `POSTGRES_DB` | `logs` | Nombre de la base de datos |
+| `POSTGRES_USER` | `postgres` | Usuario de PostgreSQL |
+| `POSTGRES_PASSWORD` | `postgres` | Contraseña de PostgreSQL |
+| `KAFKA_CLUSTER_ID` | (generado) | ID único del cluster Kafka |
