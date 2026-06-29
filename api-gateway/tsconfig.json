@@ -16,5 +16,6 @@
     "strictBindCallApply": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true
-  }
+  },
+  "exclude": ["node_modules", "dist", "test", "jest.config.ts"]
 }

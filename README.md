@@ -10,6 +10,8 @@ graph LR
   G -->|emit app-logs| K[Kafka KRaft<br/>:9092]
   K -->|consume| L[log-consumer]
   L -->|INSERT| P[(PostgreSQL)]
+  G -.->|OTLP| J[Jaeger<br/>:16686]
+  L -.->|OTLP| J
 ```
 
 ## Stack
@@ -20,6 +22,7 @@ graph LR
 | Log Consumer | NestJS v11 Kafka microservice |
 | Mensajería | Apache Kafka 4.3.0 (KRaft, sin Zookeeper) |
 | Persistencia | PostgreSQL 17 (sin ORM, pg directo) |
+| Trazabilidad | OpenTelemetry + Jaeger (all-in-one) |
 | Contenedores | Docker Compose |
 | Testing | Jest (unit + e2e) |
 
@@ -29,6 +32,8 @@ graph LR
 centralized-logging/
 ├── api-gateway/          # HTTP API + Kafka producer
 │   ├── src/
+│   │   ├── instrumentation.ts
+│   │   ├── instrumentation.spec.ts
 │   │   ├── main.ts
 │   │   ├── app.module.ts
 │   │   ├── app.controller.ts
@@ -43,6 +48,8 @@ centralized-logging/
 │   └── Dockerfile
 ├── log-consumer/         # Kafka consumer + PostgreSQL
 │   ├── src/
+│   │   ├── instrumentation.ts
+│   │   ├── instrumentation.spec.ts
 │   │   ├── main.ts
 │   │   ├── app.module.ts
 │   │   ├── app.controller.ts
@@ -88,6 +95,8 @@ Respuesta esperada:
 }
 ```
 
+Para ver las trazas distribuidas, abrir Jaeger en http://localhost:16686, seleccionar el servicio `api-gateway` y buscar. Cada request a `POST /log` genera una traza completa: HTTP → Kafka produce → Kafka consume → PostgreSQL.
+
 ## Endpoints
 
 | Método | Ruta | Body | Descripción |
@@ -112,10 +121,15 @@ Las variables de entorno tienen defaults para localhost, no hace falta configura
 
 ## Testing
 
-Cada microservicio tiene tests unitarios y el api-gateway tiene tests e2e. Los servicios externos (Kafka, PostgreSQL) son mockeados — no requieren Docker para correr los tests.
+Cada microservicio tiene tests unitarios y el api-gateway tiene tests e2e. Los servicios externos (Kafka, PostgreSQL, OpenTelemetry) son mockeados — no requieren Docker para correr los tests.
+
+| Proyecto | Tests | Archivos |
+|----------|-------|----------|
+| api-gateway | 7 unit + 5 instrumentation + 4 e2e | `app.controller.spec.ts`, `create-log.dto.spec.ts`, `instrumentation.spec.ts`, `app.e2e-spec.ts` |
+| log-consumer | 3 unit + 5 instrumentation | `app.controller.spec.ts`, `instrumentation.spec.ts` |
 
 ```bash
-# Unit tests
+# Unit tests (ambos proyectos)
 cd api-gateway && npm test
 cd log-consumer && npm test
 
@@ -141,3 +155,4 @@ Copiar `.env.example` a `.env` y ajustar según sea necesario:
 | `POSTGRES_USER` | `postgres` | Usuario de PostgreSQL |
 | `POSTGRES_PASSWORD` | `postgres` | Contraseña de PostgreSQL |
 | `KAFKA_CLUSTER_ID` | (generado) | ID único del cluster Kafka |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://jaeger:4318` | Endpoint OTLP para trazas |
